@@ -1,4 +1,4 @@
-use crate::GmailnatorInbox;
+use crate::{GmailnatorInbox, Error};
 
 use std::time::Instant;
 
@@ -27,11 +27,11 @@ impl AddressQueue {
 
     }
 
-    pub fn pop(&mut self) -> String {
+    pub fn pop(&mut self) -> Result<String, Error> {
 
-        if self.should_renew() { self.renew() }
+        if self.should_renew() { self.renew()? }
 
-        self.bulk_vec.pop().unwrap()
+        Ok(self.bulk_vec.pop().unwrap())
 
     }
 
@@ -43,8 +43,21 @@ impl AddressQueue {
 
                 let empty = self.bulk_vec.is_empty(); 
                 let expired = instant.elapsed().as_secs() >= self.expiration;
-                             
-                empty || expired
+                           
+                let renew = empty || expired;
+
+                if renew {
+
+                    print!("Renewing queue. ");
+                    
+                    if empty { print!("[empty]") }
+                    if expired { print!("[expired]") }
+
+                    println!();
+
+                }
+
+                renew
 
             }
             
@@ -54,19 +67,18 @@ impl AddressQueue {
 
     }
 
-    fn renew(&mut self) {
+    fn renew(&mut self) -> Result<(), Error> {
         
         self.bulk_vec.clear();
 
-        GmailnatorInbox::new_bulk(BULK_SIZE)
-            .unwrap()
+        GmailnatorInbox::new_bulk(BULK_SIZE)?
             .iter()
             .for_each(|inbox| self.bulk_vec.push(inbox.get_address().to_string()));
 
         self.last_updated = Some(Instant::now());
 
-        assert_eq!(self.bulk_vec.len(), BULK_SIZE as usize);
-
+        Ok(())
+        
     }
 
 }

@@ -15,12 +15,12 @@ When starting the server, if no configuration file is found the default one will
 <b>Fields :</b> 
 
 `port` The port on which the http server will listen, default is 80 <br>
-`address_expiration` The duration in seconds between the address queue renewals, default is 86400 (1 day)
+`address_expiration` The duration in seconds between the address queue renewals, default is 82800 (23 hours)
 
 ### Endpoints : 
 
 <b>Note :</b> The local address/host is managed by Rocket and changes depending on whether the build is a release or a debug build, check the Rocket banner that is printed at program startup.
-<br><br><b>Note 2 :</b> The "real" gmailnator server is a huge bottleneck, it is slow. A `/get_messages` call can take up to a few seconds to get a response, drink some tea and relax 🍵
+<br><br><b>Note 2 :</b> The "real" gmailnator server is a huge bottleneck, it is slow. A `/get_messages` call can take up to a few seconds, drink some tea and relax 🍵
 <br><br><b>GET</b> `/new_address`                         Responds with a new gmailnator address in a raw string format.
 <br>                                                        Example response : 
 ```wildtmp+zqeia@gmail.com```

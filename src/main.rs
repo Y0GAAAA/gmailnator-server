@@ -8,15 +8,17 @@
 mod mail;
 
 use mail::AddressQueue;
+
 use gmailnator::{GmailnatorInbox, MailMessage, Error};
+
 use rocket_contrib::json::Json;
+use rocket::response::Debug;
+
 use configparser::ini::Ini;
 use std::sync::Mutex;
 
 const SETTINGS_FILE:&'static str = "settings.ini";
-
-const DEFAULT_SETTINGS:&'static str = "[server]\nPORT=80\nADDRESS_EXPIRATION=86400";
-
+const DEFAULT_SETTINGS:&'static str = "[server]\nPORT=80\nADDRESS_EXPIRATION=82800";
 const INVALID_FILE_MESSAGE:&'static str = "Invalid configuration file, delete it and try again.";
 
 lazy_static! {
@@ -58,19 +60,30 @@ fn main() -> Result<(), ()> {
 }
 
 #[get("/new_address")]
-fn new_address() -> String {
+fn new_address() -> Result<String, Debug<Error>> {
 
-    MAIL_QUEUE.lock().unwrap().pop()
+    get_debuggable_error(MAIL_QUEUE.lock().unwrap().pop())
 
 }
 
 #[get("/get_messages/<address>")]
-fn get_messages(address:String) -> Result<Json<Vec<MailMessage>>, Error> {
+fn get_messages(address:String) -> Result<Json<Vec<MailMessage>>, Debug<Error>> {
 
-    let inbox = GmailnatorInbox::from_address(&address)?;
+    let inbox = get_debuggable_error(GmailnatorInbox::from_address(&address))?;
 
-    let messages:Vec<MailMessage> = inbox.get_messages_iter()?.collect();
+    let messages:Vec<MailMessage> = get_debuggable_error(inbox.get_messages_iter())?.collect();
 
     Ok(Json(messages))
+
+}
+
+fn get_debuggable_error<T, E>(result:Result<T, E>) -> Result<T, Debug<E>> {
+
+    match result {
+
+        Ok(value) => Ok(value),
+        Err(e) => Err(Debug::from(e)),
+
+    }
 
 }
