@@ -1,6 +1,6 @@
 ### Gmailnator server
 
-A local http server built with rocket that offers large interoperability for people wanting to use gmailnator in a programming language other than Rust.
+A local http server built with rocket that offers great interoperability.
 
 ### Background :
 
